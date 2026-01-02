@@ -6,11 +6,9 @@ app = FastAPI()
 app.mount(
     "/md-studio",
     MarkdownStudioMiddleware(
-        storage_path="./content",
-        uploads_path="./uploads",
-        title="My Documentation",
-        allow_upload=True,
-        allow_import_export=True,
+        title="md Studio",
+        scan_dirs=["./content"],
+        write_dir="./content",
     )
 )
 

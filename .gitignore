@@ -13,3 +13,7 @@ __pycache__/
 .vscode/
 .idea/
 
+content
+docs
+markdowns
+md

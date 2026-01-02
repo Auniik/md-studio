@@ -3,7 +3,7 @@ import uuid
 import aiofiles
 from pathlib import Path
 from datetime import datetime
-from typing import Optional, List, Dict, Any, Literal
+from typing import Optional, List, Dict, Any, Literal, Iterable, Union
 from dataclasses import dataclass, asdict
 import frontmatter
 
@@ -36,34 +36,76 @@ class DocFull:
     bodyMd: str
 
 class ContentAdapter:
-    def __init__(self, content_root: Optional[str] = None, index_path: Optional[str] = None):
+    def __init__(
+        self,
+        content_root: Optional[str] = None,
+        index_path: Optional[str] = None,
+        scan_dirs: Optional[Union[str, Iterable[str]]] = None,
+        write_dir: Optional[Union[str, Iterable[str]]] = None,
+    ):
+        self.scan_dirs_override = scan_dirs
+        self.write_dir_override = write_dir
+
+        if content_root is None and scan_dirs is None and write_dir is None:
+            env_scan = os.getenv("SCAN_DIRS") or os.getenv("CONTENT_DIRS")
+            env_write = os.getenv("WRITE_DIR")
+            if not env_scan and not env_write:
+                raise ValueError(
+                    "Provide scan_dirs or write_dir (or set SCAN_DIRS/WRITE_DIR) to locate content."
+                )
+
         self.content_root = Path(content_root or os.path.join(os.getcwd(), "content"))
         self.index_path = Path(index_path or os.path.join(os.getcwd(), ".md-studio", "index.json"))
         
         self.scan_roots = self._get_scan_roots()
         self.write_root = self._get_write_root()
+        self.roots = self._get_roots()
     
+    def _normalize_roots(self, raw: Optional[Union[str, Iterable[str]]]) -> List[Path]:
+        if not raw:
+            return []
+        if isinstance(raw, str):
+            entries = [entry.strip() for entry in raw.split(",") if entry.strip()]
+        else:
+            entries = [str(entry).strip() for entry in raw if str(entry).strip()]
+        return [
+            Path(entry) if os.path.isabs(entry) else Path(os.getcwd()) / entry
+            for entry in entries
+        ]
+
     def _get_scan_roots(self) -> List[Path]:
+        if self.scan_dirs_override is not None:
+            roots = self._normalize_roots(self.scan_dirs_override)
+            if roots:
+                return roots
         scan_dirs = os.getenv("SCAN_DIRS")
         if scan_dirs:
-            return [Path(d.strip()) if os.path.isabs(d.strip()) else Path(os.getcwd()) / d.strip() 
-                   for d in scan_dirs.split(",") if d.strip()]
+            return self._normalize_roots(scan_dirs)
         
         content_dirs = os.getenv("CONTENT_DIRS")
         if content_dirs:
-            return [Path(d.strip()) if os.path.isabs(d.strip()) else Path(os.getcwd()) / d.strip() 
-                   for d in content_dirs.split(",") if d.strip()]
+            return self._normalize_roots(content_dirs)
         
         return [self.content_root]
     
     def _get_write_root(self) -> Path:
+        if self.write_dir_override is not None:
+            dirs = self._normalize_roots(self.write_dir_override)
+            if dirs:
+                return dirs[0]
         write_dir = os.getenv("WRITE_DIR")
         if write_dir:
-            dirs = [Path(d.strip()) if os.path.isabs(d.strip()) else Path(os.getcwd()) / d.strip() 
-                   for d in write_dir.split(",") if d.strip()]
+            dirs = self._normalize_roots(write_dir)
             if dirs:
                 return dirs[0]
         return self.scan_roots[0] if self.scan_roots else self.content_root
+
+    def _get_roots(self) -> List[Path]:
+        roots: List[Path] = []
+        for root in self.scan_roots + [self.write_root]:
+            if root not in roots:
+                roots.append(root)
+        return roots
     
     async def list(
         self,
@@ -262,7 +304,7 @@ class ContentAdapter:
             slug=meta.slug,
             excerpt=meta.excerpt,
             isPublic=now_public,
-            publicId=meta.publicId or str(uuid.uuid4()) if now_public else None,
+            publicId=meta.publicId or str(uuid.uuid4()),
             createdAt=meta.createdAt,
             updatedAt=datetime.now().isoformat()
         )
@@ -291,7 +333,7 @@ class ContentAdapter:
         return root / f"{slug}.md"
     
     async def _find_doc_location(self, slug: str) -> Optional[Dict[str, str]]:
-        for root in self.scan_roots:
+        for root in self.roots:
             file_path = self._get_doc_path(root, slug)
             if await path_exists(file_path):
                 return {"root": str(root), "path": str(file_path)}
@@ -301,7 +343,7 @@ class ContentAdapter:
         if exclude and slug == exclude:
             return True
         
-        for root in self.scan_roots:
+        for root in self.roots:
             if await path_exists(self._get_doc_path(root, slug)):
                 return False
         return True
@@ -313,11 +355,22 @@ class ContentAdapter:
             entries = self._merge_indexes([entries])
         
         index_exists = await path_exists(self.index_path)
+        disk_entries = await self._read_docs_from_scan_roots()
+        if disk_entries:
+            existing_by_slug = {entry.slug: entry for entry in entries}
+            for entry in disk_entries:
+                existing = existing_by_slug.get(entry.slug)
+                if not entry.publicId and existing and existing.publicId:
+                    entry.publicId = existing.publicId
+                if not entry.publicId:
+                    entry.publicId = str(uuid.uuid4())
         if not index_exists or not entries:
-            disk_entries = await self._read_docs_from_scan_roots()
             if disk_entries:
                 await self._write_index(disk_entries)
                 return disk_entries
+        if disk_entries and not self._indexes_equal(entries, disk_entries):
+            await self._write_index(disk_entries)
+            return disk_entries
         
         return sorted(entries, key=lambda x: -datetime.fromisoformat(x.updatedAt).timestamp())
     
@@ -403,7 +456,7 @@ class ContentAdapter:
     
     async def _read_docs_from_scan_roots(self) -> List[DocMeta]:
         all_docs = []
-        for root in self.scan_roots:
+        for root in self.roots:
             docs = await self._read_docs_from_disk(root)
             all_docs.append(docs)
         
@@ -424,3 +477,22 @@ class ContentAdapter:
                     by_slug[entry.slug] = entry
         
         return list(by_slug.values())
+
+    def _indexes_equal(self, left: List[DocMeta], right: List[DocMeta]) -> bool:
+        if len(left) != len(right):
+            return False
+        left_sorted = sorted(left, key=lambda item: item.slug)
+        right_sorted = sorted(right, key=lambda item: item.slug)
+        for left_item, right_item in zip(left_sorted, right_sorted):
+            if left_item.slug != right_item.slug:
+                return False
+            if (
+                left_item.title != right_item.title
+                or left_item.excerpt != right_item.excerpt
+                or left_item.isPublic != right_item.isPublic
+                or left_item.publicId != right_item.publicId
+                or left_item.createdAt != right_item.createdAt
+                or left_item.updatedAt != right_item.updatedAt
+            ):
+                return False
+        return True

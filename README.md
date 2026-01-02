@@ -47,14 +47,19 @@ app = FastAPI()
 app.mount(
     "/docs",
     MarkdownStudioMiddleware(
-        storage_path="./content",
         title="My Documentation",
-        allow_upload=True,
+        scan_dirs=["./content"],
+        write_dir="./content",
     )
 )
 ```
 
 `base_path` is optional; when omitted it defaults to the mount prefix (e.g. `"/docs"`).
+
+`scan_dirs` (required unless `SCAN_DIRS`/`WRITE_DIR` are set) controls where existing content is scanned.
+`write_dir` selects where new/imported documents are saved.
+Uploads default to `<write_dir>/uploads` unless `uploads_path` is provided.
+`metadata_path` controls where the index metadata is stored (default: `<write_dir>/uploads/.md-studio-metadata.json`).
 
 ### Starlette
 
@@ -68,9 +73,9 @@ app = Starlette(
         Mount(
             "/docs",
             MarkdownStudioMiddleware(
-                storage_path="./content",
-                uploads_path="./uploads",
                 title="My Docs",
+                scan_dirs=["./content"],
+                write_dir="./content",
             )
         )
     ]
@@ -89,12 +94,10 @@ Then visit `http://localhost:8000/docs`
 
 ```python
 MarkdownStudioMiddleware(
-    storage_path="./content",           # Where markdown files are stored
-    uploads_path="./uploads",           # Where uploaded files are stored
+    scan_dirs=["./content"],            # Where existing markdown files are scanned
+    write_dir="./content",              # Where new/imported markdown files are written
     storage_backend="filesystem",       # "filesystem" or "s3"
     title="MD Studio",                  # Application title
-    allow_upload=True,                  # Enable file uploads
-    allow_import_export=True,           # Enable import/export
     max_upload_size=10485760,           # Max upload size (10MB)
     s3_config=None,                     # S3 configuration dict
 )
@@ -108,7 +111,8 @@ MarkdownStudioMiddleware(
 app.mount(
     "/docs",
     MarkdownStudioMiddleware(
-        storage_path="./content",
+        scan_dirs=["./content"],
+        write_dir="./content",
         storage_backend="filesystem",
     )
 )
