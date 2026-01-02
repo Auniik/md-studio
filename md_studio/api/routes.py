@@ -208,24 +208,41 @@ async def export_documents(request: Request):
 
 async def import_documents(request: Request):
     try:
-        form = await request.form()
         adapter = await get_adapter(request)
-        
+
+        if request.method == "GET":
+            slug = request.query_params.get("slug")
+            if not slug:
+                return JSONResponse({"error": "Missing slug"}, status_code=400)
+            existing = await adapter.get_by_slug(slug)
+            return JSONResponse({"exists": bool(existing)})
+
+        form = await request.form()
         successful = []
         failed = []
         
         index = 0
         while True:
-            file_content = form.get(f"file_{index}")
-            if not file_content:
+            file_entry = form.get(f"file_{index}")
+            if not file_entry:
                 break
             
-            filename = form.get(f"filename_{index}", f"file_{index}.md")
+            filename = form.get(f"filename_{index}")
+            if not filename and hasattr(file_entry, "filename"):
+                filename = file_entry.filename
+            filename = filename or f"file_{index}.md"
             custom_slug = form.get(f"slug_{index}", "")
             replace = form.get(f"replace_{index}") == "true"
             
             try:
-                post = frontmatter.loads(file_content)
+                if hasattr(file_entry, "read"):
+                    raw = await file_entry.read()
+                    if isinstance(raw, bytes):
+                        raw = raw.decode("utf-8", errors="replace")
+                else:
+                    raw = file_entry
+
+                post = frontmatter.loads(raw)
                 front_title = post.metadata.get("title")
                 front_slug = post.metadata.get("slug")
                 
@@ -267,5 +284,5 @@ routes = [
     Route("/api/toggle-public", toggle_public, methods=["POST"]),
     Route("/api/upload", upload_file, methods=["POST"]),
     Route("/api/export", export_documents, methods=["GET"]),
-    Route("/api/import", import_documents, methods=["POST"]),
+    Route("/api/import", import_documents, methods=["GET", "POST"]),
 ]
