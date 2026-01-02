@@ -85,6 +85,7 @@ class MarkdownStudioMiddleware(Starlette):
             write_dir=write_dir,
         )
         self.state.base_path = self.base_path
+        self.state.uploads_path = str(self.uploads_path)
     
     async def serve_spa(self, request):
         static_dir = Path(__file__).parent / "static"

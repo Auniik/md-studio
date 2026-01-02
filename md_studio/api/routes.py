@@ -182,7 +182,8 @@ async def upload_file(request: Request):
         if not base_path:
             root_path = request.scope.get("root_path", "") or ""
             base_path = root_path.rstrip("/") if root_path not in ("", "/") else ""
-        storage = get_image_storage_adapter(base_path=base_path)
+        upload_dir = getattr(request.app.state, "uploads_path", None)
+        storage = get_image_storage_adapter(base_path=base_path, upload_dir=upload_dir)
         result = await storage.upload_image(content, file.filename, file.content_type)
         
         return JSONResponse(result)

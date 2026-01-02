@@ -7,7 +7,7 @@ app.mount(
     "/md-studio",
     MarkdownStudioMiddleware(
         title="md Studio",
-        scan_dirs=["./content"],
+        scan_dirs=["./content",],
         write_dir="./content",
     )
 )

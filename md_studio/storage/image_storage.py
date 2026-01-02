@@ -103,13 +103,17 @@ class S3ImageStorage(ImageStorageAdapter):
         }
 
 _cached_storage: Optional[ImageStorageAdapter] = None
+_cached_storage_key: Optional[tuple] = None
 
-def get_image_storage_adapter(base_path: str = "") -> ImageStorageAdapter:
+def get_image_storage_adapter(base_path: str = "", upload_dir: Optional[str] = None) -> ImageStorageAdapter:
     global _cached_storage
+    global _cached_storage_key
     
     if _cached_storage:
-        return _cached_storage
+        if _cached_storage_key == (base_path, upload_dir, os.getenv("STORAGE_ADAPTER", "fs").lower()):
+            return _cached_storage
     
     mode = os.getenv("STORAGE_ADAPTER", "fs").lower()
-    _cached_storage = S3ImageStorage() if mode == "s3" else LocalImageStorage(base_path=base_path)
+    _cached_storage = S3ImageStorage() if mode == "s3" else LocalImageStorage(upload_dir=upload_dir, base_path=base_path)
+    _cached_storage_key = (base_path, upload_dir, mode)
     return _cached_storage
