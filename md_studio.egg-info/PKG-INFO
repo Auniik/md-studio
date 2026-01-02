@@ -1,0 +1,213 @@
+Metadata-Version: 2.4
+Name: md-studio
+Version: 0.1.0
+Summary: Markdown CMS as a Python package - embed in FastAPI/Starlette applications
+Author: MD Studio Contributors
+License: MIT
+Project-URL: Homepage, https://github.com/md-studio/md-studio
+Project-URL: Documentation, https://github.com/md-studio/md-studio#readme
+Project-URL: Repository, https://github.com/md-studio/md-studio
+Project-URL: Issues, https://github.com/md-studio/md-studio/issues
+Keywords: markdown,cms,fastapi,starlette,documentation
+Classifier: Development Status :: 3 - Alpha
+Classifier: Intended Audience :: Developers
+Classifier: License :: OSI Approved :: MIT License
+Classifier: Programming Language :: Python :: 3
+Classifier: Programming Language :: Python :: 3.8
+Classifier: Programming Language :: Python :: 3.9
+Classifier: Programming Language :: Python :: 3.10
+Classifier: Programming Language :: Python :: 3.11
+Classifier: Programming Language :: Python :: 3.12
+Classifier: Framework :: FastAPI
+Classifier: Framework :: AsyncIO
+Classifier: Topic :: Software Development :: Libraries :: Python Modules
+Classifier: Topic :: Text Processing :: Markup :: Markdown
+Requires-Python: >=3.8
+Description-Content-Type: text/markdown
+License-File: LICENSE
+Requires-Dist: starlette>=0.27.0
+Requires-Dist: python-multipart>=0.0.6
+Requires-Dist: aiofiles>=23.0.0
+Requires-Dist: markdown>=3.4.0
+Requires-Dist: pydantic>=2.0.0
+Requires-Dist: python-frontmatter>=1.0.0
+Requires-Dist: Pygments>=2.15.0
+Provides-Extra: s3
+Requires-Dist: boto3>=1.28.0; extra == "s3"
+Provides-Extra: image
+Requires-Dist: Pillow>=10.0.0; extra == "image"
+Provides-Extra: all
+Requires-Dist: boto3>=1.28.0; extra == "all"
+Requires-Dist: Pillow>=10.0.0; extra == "all"
+Provides-Extra: dev
+Requires-Dist: pytest>=7.4.0; extra == "dev"
+Requires-Dist: pytest-asyncio>=0.21.0; extra == "dev"
+Requires-Dist: httpx>=0.24.0; extra == "dev"
+Requires-Dist: black>=23.0.0; extra == "dev"
+Requires-Dist: ruff>=0.0.280; extra == "dev"
+Dynamic: license-file
+
+# MD Studio
+
+A standalone Python package that provides a modern Markdown CMS for FastAPI and Starlette applications. No Node.js runtime required.
+
+## Features
+
+- 📝 **Markdown-first**: Write content in Markdown with frontmatter support
+- 🎨 **Modern UI**: React-based interface with dark mode
+- 🚀 **Easy Integration**: Mount as ASGI middleware in any FastAPI/Starlette app
+- 📁 **Flexible Storage**: Filesystem or S3 storage backends
+- 🔒 **Public Sharing**: Share documents publicly with unique URLs
+- 📤 **Import/Export**: Bulk operations with ZIP archives
+- 🖼️ **File Uploads**: Built-in file upload and attachment handling
+- 🔍 **Search & Filter**: Full-text search with sorting and filtering
+
+## Installation
+
+```bash
+pip install md-studio
+```
+
+For S3 storage support:
+```bash
+pip install md-studio[s3]
+```
+
+For image processing:
+```bash
+pip install md-studio[image]
+```
+
+All optional dependencies:
+```bash
+pip install md-studio[all]
+```
+
+## Quick Start
+
+### FastAPI
+
+```python
+from fastapi import FastAPI
+from md_studio import MarkdownStudioMiddleware
+
+app = FastAPI()
+
+app.mount(
+    "/docs",
+    MarkdownStudioMiddleware(
+        storage_path="./content",
+        title="My Documentation",
+        allow_upload=True,
+    )
+)
+```
+
+### Starlette
+
+```python
+from starlette.applications import Starlette
+from starlette.routing import Mount
+from md_studio import MarkdownStudioMiddleware
+
+app = Starlette(
+    routes=[
+        Mount(
+            "/docs",
+            MarkdownStudioMiddleware(
+                storage_path="./content",
+                uploads_path="./uploads",
+                title="My Docs",
+            )
+        )
+    ]
+)
+```
+
+### Run the server
+
+```bash
+uvicorn main:app --reload
+```
+
+Then visit `http://localhost:8000/docs`
+
+## Configuration
+
+```python
+MarkdownStudioMiddleware(
+    storage_path="./content",           # Where markdown files are stored
+    uploads_path="./uploads",           # Where uploaded files are stored
+    storage_backend="filesystem",       # "filesystem" or "s3"
+    title="MD Studio",                  # Application title
+    allow_upload=True,                  # Enable file uploads
+    allow_import_export=True,           # Enable import/export
+    max_upload_size=10485760,           # Max upload size (10MB)
+    s3_config=None,                     # S3 configuration dict
+)
+```
+
+## Storage Backends
+
+### Filesystem (Default)
+
+```python
+app.mount(
+    "/docs",
+    MarkdownStudioMiddleware(
+        storage_path="./content",
+        storage_backend="filesystem",
+    )
+)
+```
+
+### S3 Storage
+
+```python
+app.mount(
+    "/docs",
+    MarkdownStudioMiddleware(
+        storage_backend="s3",
+        s3_config={
+            "bucket": "my-bucket",
+            "region": "us-east-1",
+            "access_key_id": "...",
+            "secret_access_key": "...",
+            "base_prefix": "docs/",
+        }
+    )
+)
+```
+
+## Development
+
+### Frontend Development
+
+The frontend is built with Remix and React. To rebuild the frontend:
+
+```bash
+cd md-cms-file
+npm install
+npm run build
+```
+
+Then copy the built assets:
+
+```bash
+cp -r md-cms-file/build/client/* md-studio/md_studio/static/
+```
+
+### Running Tests
+
+```bash
+pip install -e ".[dev]"
+pytest
+```
+
+## License
+
+MIT License - see LICENSE file for details
+
+## Contributing
+
+Contributions are welcome! Please feel free to submit a Pull Request.

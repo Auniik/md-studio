@@ -1,0 +1,15 @@
+# Write based on this project
+
+# .gitignore for md-studio
+index.json
+uploads/
+.temp/
+__pycache__/
+*.pyc
+.venv/
+.env
+.ipynb_checkpoints/
+.DS_Store
+.vscode/
+.idea/
+

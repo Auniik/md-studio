@@ -1,0 +1,73 @@
+[build-system]
+requires = ["setuptools>=68.0", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "md-studio"
+version = "0.1.0"
+description = "Markdown CMS as a Python package - embed in FastAPI/Starlette applications"
+readme = "README.md"
+requires-python = ">=3.8"
+license = {text = "MIT"}
+authors = [
+    {name = "MD Studio Contributors"}
+]
+keywords = ["markdown", "cms", "fastapi", "starlette", "documentation"]
+classifiers = [
+    "Development Status :: 3 - Alpha",
+    "Intended Audience :: Developers",
+    "License :: OSI Approved :: MIT License",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.8",
+    "Programming Language :: Python :: 3.9",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Framework :: FastAPI",
+    "Framework :: AsyncIO",
+    "Topic :: Software Development :: Libraries :: Python Modules",
+    "Topic :: Text Processing :: Markup :: Markdown",
+]
+
+dependencies = [
+    "starlette>=0.27.0",
+    "python-multipart>=0.0.6",
+    "aiofiles>=23.0.0",
+    "markdown>=3.4.0",
+    "pydantic>=2.0.0",
+    "python-frontmatter>=1.0.0",
+    "Pygments>=2.15.0",
+    "bleach>=6.0.0",
+]
+
+[project.optional-dependencies]
+s3 = ["boto3>=1.28.0"]
+image = ["Pillow>=10.0.0"]
+all = ["boto3>=1.28.0", "Pillow>=10.0.0"]
+dev = [
+    "pytest>=7.4.0",
+    "pytest-asyncio>=0.21.0",
+    "httpx>=0.24.0",
+    "black>=23.0.0",
+    "ruff>=0.0.280",
+]
+
+[project.urls]
+Homepage = "https://github.com/md-studio/md-studio"
+Documentation = "https://github.com/md-studio/md-studio#readme"
+Repository = "https://github.com/md-studio/md-studio"
+Issues = "https://github.com/md-studio/md-studio/issues"
+
+[tool.setuptools]
+packages = ["md_studio", "md_studio.api", "md_studio.storage", "md_studio.utils"]
+
+[tool.setuptools.package-data]
+md_studio = ["static/**/*"]
+
+[tool.black]
+line-length = 100
+target-version = ['py38', 'py39', 'py310', 'py311']
+
+[tool.ruff]
+line-length = 100
+target-version = "py38"
