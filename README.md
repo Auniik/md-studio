@@ -54,6 +54,8 @@ app.mount(
 )
 ```
 
+`base_path` is optional; when omitted it defaults to the mount prefix (e.g. `"/docs"`).
+
 ### Starlette
 
 ```python

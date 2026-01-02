@@ -2,7 +2,7 @@ from starlette.applications import Starlette
 from starlette.middleware import Middleware
 from starlette.routing import Mount, Route
 from starlette.staticfiles import StaticFiles
-from starlette.responses import FileResponse, HTMLResponse
+from starlette.responses import FileResponse, HTMLResponse, Response
 from pathlib import Path
 import os
 import re
@@ -40,7 +40,7 @@ class MarkdownStudioMiddleware(Starlette):
         static_dir = Path(__file__).parent / "static"
         
         routes = api_routes + [
-            Mount("/assets", StaticFiles(directory=str(static_dir / "assets")), name="assets"),
+            Route("/assets/{path:path}", self.serve_asset),
             Mount("/uploads", StaticFiles(directory=str(self.uploads_path)), name="uploads"),
             Route("/{path:path}", self.serve_spa),
         ]
@@ -51,7 +51,7 @@ class MarkdownStudioMiddleware(Starlette):
             content_root=str(self.storage_path),
             index_path=str(Path(os.getcwd()) / ".md-studio" / "index.json")
         )
-        self.state.base_path = base_path
+        self.state.base_path = self.base_path
     
     async def serve_spa(self, request):
         static_dir = Path(__file__).parent / "static"
@@ -67,59 +67,46 @@ class MarkdownStudioMiddleware(Starlette):
         html_path = static_dir / "index.html"
         with open(html_path, 'r', encoding='utf-8') as f:
             html_content = f.read()
-        
-        # Only inject window.ENV for runtime configuration
-        env_script = f'''<script>
-    window.ENV = {{
-      BASE_PATH: "{self.base_path}",
-      DASHBOARD_PATH: "/",
-      SHARE_BASE_URL: "{self.base_path}"
-    }};
-  </script>'''
 
-        # Ensure Remix uses the correct basename when mounted under a prefix.
-        if '"basename":' in html_content:
-            html_content = re.sub(
-                r'"basename"\s*:\s*"[^"]*"',
-                f'"basename":"{self.base_path or "/"}"',
-                html_content,
-                count=1,
-            )
-        
-        # Inject before the closing </head> tag
-        html_content = html_content.replace('</head>', f'{env_script}</head>')
-        
+        html_content = self._replace_base_path(html_content, self._get_effective_base_path(request))
         return HTMLResponse(html_content)
+
+    async def serve_asset(self, request):
+        static_dir = Path(__file__).parent / "static"
+        asset_path = request.path_params.get("path", "")
+        file_path = static_dir / "assets" / asset_path
+
+        if not file_path.exists() or not file_path.is_file():
+            return Response(status_code=404)
+
+        if file_path.suffix in {".js", ".css", ".map", ".json", ".html"}:
+            content = file_path.read_text(encoding="utf-8")
+            content = self._replace_base_path(content, self._get_effective_base_path(request))
+            media_type = "application/javascript"
+            if file_path.suffix == ".css":
+                media_type = "text/css"
+            elif file_path.suffix == ".map" or file_path.suffix == ".json":
+                media_type = "application/json"
+            elif file_path.suffix == ".html":
+                media_type = "text/html"
+            return Response(content, media_type=media_type)
+
+        return FileResponse(file_path)
     
-    def _generate_index_html(self):
-        return f'''<!DOCTYPE html>
-<html lang="en">
-<head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>{self.title}</title>
-  <script>
-    window.ENV = {{
-      BASE_PATH: "{self.base_path}",
-      DASHBOARD_PATH: "{self.base_path}/",
-      SHARE_BASE_URL: "{self.base_path}"
-    }};
-  </script>
-  <script>
-    (function() {{
-      var theme = localStorage.getItem('md-studio-theme') || 'system';
-      var resolved = theme;
-      if (theme === 'system') {{
-        resolved = window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
-      }}
-      document.documentElement.classList.add(resolved);
-    }})();
-  </script>
-</head>
-<body>
-  <div id="root"></div>
-</body>
-</html>'''
+
+    def _get_effective_base_path(self, request) -> str:
+        if self.base_path:
+            return self.base_path
+        root_path = request.scope.get("root_path", "") or ""
+        return self._normalize_base_path(root_path)
+
+    def _replace_base_path(self, content: str, base_path: str) -> str:
+        base_segment = base_path.lstrip("/")
+        if base_segment:
+            return content.replace("__BASE_PATH__", base_segment)
+        content = content.replace("/__BASE_PATH__/", "/")
+        content = content.replace("/__BASE_PATH__", "/")
+        return content.replace("__BASE_PATH__", "")
 
     def _normalize_base_path(self, raw: str) -> str:
         if not raw:

@@ -4,14 +4,13 @@ from md_studio import MarkdownStudioMiddleware
 app = FastAPI()
 
 app.mount(
-    "/md",
+    "/md-studio",
     MarkdownStudioMiddleware(
         storage_path="./content",
         uploads_path="./uploads",
         title="My Documentation",
         allow_upload=True,
         allow_import_export=True,
-        base_path="/md",
     )
 )
 

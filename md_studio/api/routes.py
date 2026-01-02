@@ -178,7 +178,10 @@ async def upload_file(request: Request):
         if file.content_type not in allowed_types:
             return JSONResponse({"error": f"Unsupported file type: {file.content_type}"}, status_code=400)
         
-        base_path = getattr(request.app.state, 'base_path', '')
+        base_path = getattr(request.app.state, "base_path", "") or ""
+        if not base_path:
+            root_path = request.scope.get("root_path", "") or ""
+            base_path = root_path.rstrip("/") if root_path not in ("", "/") else ""
         storage = get_image_storage_adapter(base_path=base_path)
         result = await storage.upload_image(content, file.filename, file.content_type)
         
