@@ -1,0 +1,1 @@
+import{j as t}from"./jsx-runtime-BiXka7E7.js";import{N as o}from"./not-found-page-FnOw7Rim.js";const r=()=>[{title:"Not Found | MD Studio"},{name:"robots",content:"noindex"}];function u(){return t.jsx(o,{})}export{u as default,r as meta};
