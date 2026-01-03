@@ -23,6 +23,7 @@ class DocMeta:
     publicId: Optional[str]
     createdAt: str
     updatedAt: str
+    fileMtime: Optional[float] = None
 
 @dataclass
 class DocFull:
@@ -211,6 +212,11 @@ class ContentAdapter:
         )
         
         await self._write_document_file(self.write_root, doc_meta, body_md)
+        try:
+            stats = os.stat(self._get_doc_path(self.write_root, slug))
+            doc_meta.fileMtime = stats.st_mtime
+        except Exception:
+            pass
         await self._persist_index(lambda records: records + [doc_meta])
         
         return asdict(doc_meta)
@@ -263,6 +269,11 @@ class ContentAdapter:
         )
         
         await self._write_document_file(Path(location["root"]), updated_meta, body_md)
+        try:
+            stats = os.stat(self._get_doc_path(Path(location["root"]), next_slug))
+            updated_meta.fileMtime = stats.st_mtime
+        except Exception:
+            pass
         
         if next_slug != slug:
             old_path = self._get_doc_path(Path(location["root"]), slug)
@@ -316,6 +327,11 @@ class ContentAdapter:
             raise ValueError(f'Document "{slug}" content missing.')
         
         await self._write_document_file(Path(location["root"]), updated_meta, document["bodyMd"])
+        try:
+            stats = os.stat(self._get_doc_path(Path(location["root"]), slug))
+            updated_meta.fileMtime = stats.st_mtime
+        except Exception:
+            pass
         index[target_index] = updated_meta
         await self._write_index(index)
         
@@ -355,25 +371,23 @@ class ContentAdapter:
         entries = [DocMeta(**entry) for entry in entries_data]
         if entries:
             entries = self._merge_indexes([entries])
-        
-        index_exists = await path_exists(self.index_path)
-        disk_entries = await self._read_docs_from_scan_roots()
-        if disk_entries:
-            existing_by_slug = {entry.slug: entry for entry in entries}
-            for entry in disk_entries:
-                existing = existing_by_slug.get(entry.slug)
-                if not entry.publicId and existing and existing.publicId:
-                    entry.publicId = existing.publicId
-                if not entry.publicId:
-                    entry.publicId = str(uuid.uuid4())
-        if not index_exists or not entries:
-            if disk_entries:
-                await self._write_index(disk_entries)
-                return disk_entries
-        if disk_entries and not self._indexes_equal(entries, disk_entries):
+
+        existing_by_slug = {entry.slug: entry for entry in entries}
+        files_by_slug = await self._collect_md_files()
+        if not files_by_slug:
+            if entries:
+                await self._write_index([])
+            return []
+
+        disk_entries = await self._read_docs_from_scan_roots(existing_by_slug, files_by_slug)
+        for entry in disk_entries:
+            if not entry.publicId:
+                entry.publicId = str(uuid.uuid4())
+
+        if not self._indexes_equal(entries, disk_entries):
             await self._write_index(disk_entries)
-            return disk_entries
-        
+            return sorted(disk_entries, key=lambda x: -datetime.fromisoformat(x.updatedAt).timestamp())
+
         return sorted(entries, key=lambda x: -datetime.fromisoformat(x.updatedAt).timestamp())
     
     async def _write_index(self, entries: List[DocMeta]) -> None:
@@ -418,51 +432,68 @@ class ContentAdapter:
         await ensure_dir(root)
         await atomic_write_file(self._get_doc_path(root, meta.slug), markdown_content)
     
-    async def _read_docs_from_disk(self, root: Path) -> List[DocMeta]:
-        if not await path_exists(root):
-            return []
-        
-        try:
-            entries = os.listdir(root)
-        except Exception:
-            return []
-        
-        markdown_files = [entry for entry in entries if entry.endswith(".md")]
-        
-        docs = []
-        for filename in markdown_files:
-            slug = filename.replace(".md", "")
-            file_path = root / filename
-            
-            async with aiofiles.open(file_path, 'r', encoding='utf-8') as f:
-                content = await f.read()
-            
-            post = frontmatter.loads(content)
-            stats = os.stat(file_path)
-            data = self._normalize_frontmatter(
-                post.metadata, 
-                slug,
-                {"birthtime": datetime.fromtimestamp(stats.st_ctime), "mtime": datetime.fromtimestamp(stats.st_mtime)}
-            )
-            
-            body_content = post.content.rstrip()
-            meta_data = dict(data)
-            excerpt = meta_data.pop("excerpt", "") or create_excerpt(body_content)
-            doc_meta = DocMeta(
-                **meta_data,
-                excerpt=excerpt,
-            )
-            docs.append(doc_meta)
-        
-        return docs
-    
-    async def _read_docs_from_scan_roots(self) -> List[DocMeta]:
-        all_docs = []
+    async def _collect_md_files(self) -> Dict[str, Dict[str, Any]]:
+        files: Dict[str, Dict[str, Any]] = {}
         for root in self.roots:
-            docs = await self._read_docs_from_disk(root)
-            all_docs.append(docs)
-        
-        return self._merge_indexes(all_docs)
+            if not await path_exists(root):
+                continue
+            try:
+                entries = os.listdir(root)
+            except Exception:
+                continue
+            for filename in entries:
+                if not filename.endswith(".md"):
+                    continue
+                slug = filename.replace(".md", "")
+                file_path = root / filename
+                try:
+                    stats = os.stat(file_path)
+                except Exception:
+                    continue
+                mtime = stats.st_mtime
+                existing = files.get(slug)
+                if not existing or mtime >= existing["mtime"]:
+                    files[slug] = {"path": file_path, "mtime": mtime, "stats": stats}
+        return files
+
+    async def _read_doc_from_path(self, slug: str, file_path: Path, stats: os.stat_result) -> DocMeta:
+        async with aiofiles.open(file_path, 'r', encoding='utf-8') as f:
+            content = await f.read()
+
+        post = frontmatter.loads(content)
+        data = self._normalize_frontmatter(
+            post.metadata,
+            slug,
+            {"birthtime": datetime.fromtimestamp(stats.st_ctime), "mtime": datetime.fromtimestamp(stats.st_mtime)}
+        )
+
+        body_content = post.content.rstrip()
+        meta_data = dict(data)
+        excerpt = meta_data.pop("excerpt", "") or create_excerpt(body_content)
+        return DocMeta(
+            **meta_data,
+            excerpt=excerpt,
+            fileMtime=stats.st_mtime,
+        )
+
+    async def _read_docs_from_scan_roots(
+        self,
+        existing_by_slug: Dict[str, DocMeta],
+        files_by_slug: Dict[str, Dict[str, Any]],
+    ) -> List[DocMeta]:
+        docs: List[DocMeta] = []
+        for slug, info in files_by_slug.items():
+            existing = existing_by_slug.get(slug)
+            if existing and existing.fileMtime is not None and info["mtime"] <= existing.fileMtime:
+                docs.append(existing)
+                continue
+
+            doc_meta = await self._read_doc_from_path(slug, info["path"], info["stats"])
+            if existing and existing.publicId and not doc_meta.publicId:
+                doc_meta.publicId = existing.publicId
+            docs.append(doc_meta)
+
+        return docs
     
     def _merge_indexes(self, indexes: List[List[DocMeta]]) -> List[DocMeta]:
         by_slug: Dict[str, DocMeta] = {}
@@ -495,6 +526,7 @@ class ContentAdapter:
                 or left_item.publicId != right_item.publicId
                 or left_item.createdAt != right_item.createdAt
                 or left_item.updatedAt != right_item.updatedAt
+                or left_item.fileMtime != right_item.fileMtime
             ):
                 return False
         return True
