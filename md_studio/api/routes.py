@@ -271,13 +271,13 @@ async def import_documents(request: Request):
         return JSONResponse({"success": False, "error": str(e)}, status_code=500)
 
 routes = [
-    Route("/api/list", list_documents, methods=["GET"]),
-    Route("/api/get", get_document, methods=["GET"]),
-    Route("/api/create", create_document, methods=["POST"]),
-    Route("/api/update", update_document, methods=["POST", "PUT", "PATCH"]),
-    Route("/api/delete", delete_document, methods=["POST", "DELETE"]),
-    Route("/api/toggle-public", toggle_public, methods=["POST"]),
-    Route("/api/upload", upload_file, methods=["POST"]),
-    Route("/api/export", export_documents, methods=["GET"]),
-    Route("/api/import", import_documents, methods=["GET", "POST"]),
+    Route("/md/api/list", list_documents, methods=["GET"]),
+    Route("/md/api/get", get_document, methods=["GET"]),
+    Route("/md/api/create", create_document, methods=["POST"]),
+    Route("/md/api/update", update_document, methods=["POST", "PUT", "PATCH"]),
+    Route("/md/api/delete", delete_document, methods=["POST", "DELETE"]),
+    Route("/md/api/toggle-public", toggle_public, methods=["POST"]),
+    Route("/md/api/upload", upload_file, methods=["POST"]),
+    Route("/md/api/export", export_documents, methods=["GET"]),
+    Route("/md/api/import", import_documents, methods=["GET", "POST"]),
 ]
