@@ -73,6 +73,26 @@ uvicorn main:app --reload
 
 Then visit `http://localhost:8000/md-studio`
 
+## Frontend build (SPA)
+
+The UI is a Remix SPA that is built with Node.js and then served by the Python package.
+No Node runtime is needed in production, but Node is required to build the static assets.
+
+```bash
+cd ui
+npm install
+npm run build
+```
+
+The build output in `ui/build/client` should be copied to `md_studio/static`.
+You can use the helper script:
+
+```bash
+bash ./build_and_run.sh
+```
+
+Note: Some dependencies require Node 20.19+, 22.12+, or 24+ to avoid EBADENGINE warnings.
+
 ## Configuration
 
 ```python
