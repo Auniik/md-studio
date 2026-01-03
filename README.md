@@ -1,6 +1,6 @@
 # MD Studio
 
-A standalone Python package that provides a modern Markdown CMS for FastAPI and Starlette applications. No Node.js runtime required.
+A standalone Python package that provides a modern Markdown CMS for FastAPI and Starlette applications. 
 
 ## Features
 
