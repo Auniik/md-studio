@@ -2,11 +2,14 @@ import frontmatter
 from starlette.routing import Route
 from starlette.responses import JSONResponse
 from starlette.requests import Request
-from typing import Optional
 
 from ..storage.content_adapter import ContentAdapter
-from ..storage.image_storage import get_image_storage_adapter
-from ..utils.schemas import CreateDocumentSchema, UpdateDocumentSchema
+from ..storage.image_storage import (
+    ALLOWED_IMAGE_MIME_TYPES,
+    MAX_IMAGE_FILE_SIZE,
+    get_image_storage_adapter,
+)
+from .schemas import CreateDocumentSchema
 from ..utils.slug import slugify, ensure_unique_slug
 
 async def get_adapter(request: Request) -> ContentAdapter:
@@ -162,18 +165,10 @@ async def upload_file(request: Request):
         
         content = await file.read()
         
-        if len(content) > 5 * 1024 * 1024:
+        if len(content) > MAX_IMAGE_FILE_SIZE:
             return JSONResponse({"error": "File must be 5MB or less"}, status_code=400)
-        
-        allowed_types = {
-            "image/png": ".png",
-            "image/jpeg": ".jpg",
-            "image/jpg": ".jpg",
-            "image/webp": ".webp",
-            "image/gif": ".gif",
-        }
-        
-        if file.content_type not in allowed_types:
+
+        if file.content_type not in ALLOWED_IMAGE_MIME_TYPES:
             return JSONResponse({"error": f"Unsupported file type: {file.content_type}"}, status_code=400)
         
         root_path = request.scope.get("root_path", "") or ""

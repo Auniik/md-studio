@@ -53,55 +53,6 @@ class LocalImageStorage(ImageStorageAdapter):
             "alt": base_name.replace("-", " ")
         }
 
-class S3ImageStorage(ImageStorageAdapter):
-    def __init__(self):
-        self.bucket = os.getenv("MD_STUDIO_S3_BUCKET")
-        self.region = os.getenv("MD_STUDIO_S3_REGION")
-        
-        if not self.bucket or not self.region:
-            raise ValueError("MD_STUDIO_S3_BUCKET and MD_STUDIO_S3_REGION must be provided for S3 uploads.")
-        
-        self.base_path = os.getenv("MD_STUDIO_S3_BASE_PREFIX", "uploads")
-        self.access_key = os.getenv("MD_STUDIO_S3_ACCESS_KEY_ID")
-        self.secret_key = os.getenv("MD_STUDIO_S3_SECRET_ACCESS_KEY")
-        
-        try:
-            import boto3
-            credentials = {}
-            if self.access_key:
-                credentials = {
-                    "aws_access_key_id": self.access_key,
-                    "aws_secret_access_key": self.secret_key
-                }
-            
-            self.client = boto3.client("s3", region_name=self.region, **credentials)
-        except ImportError:
-            raise ImportError("boto3 is required for S3 storage. Install with: pip install boto3")
-    
-    async def upload_image(self, file_content: bytes, filename: str, content_type: str) -> Dict[str, str]:
-        if len(file_content) > MAX_IMAGE_FILE_SIZE:
-            raise ValueError("File exceeds 5MB limit.")
-        
-        if content_type not in ALLOWED_IMAGE_MIME_TYPES:
-            raise ValueError(f"Unsupported file type: {content_type}")
-        
-        extension = ALLOWED_IMAGE_MIME_TYPES[content_type]
-        key = f"{self.base_path}/{uuid.uuid4()}{extension}"
-        
-        self.client.put_object(
-            Bucket=self.bucket,
-            Key=key,
-            Body=file_content,
-            ContentType=content_type,
-            ACL="public-read"
-        )
-        
-        endpoint = os.getenv("MD_STUDIO_S3_PUBLIC_URL") or f"https://{self.bucket}.s3.{self.region}.amazonaws.com"
-        
-        return {
-            "url": f"{endpoint}/{key}"
-        }
-
 _cached_storage: Optional[ImageStorageAdapter] = None
 _cached_storage_key: Optional[tuple] = None
 
@@ -110,10 +61,9 @@ def get_image_storage_adapter(base_path: str = "", upload_dir: Optional[str] = N
     global _cached_storage_key
     
     if _cached_storage:
-        if _cached_storage_key == (base_path, upload_dir, os.getenv("MD_STUDIO_STORAGE_ADAPTER", "fs").lower()):
+        if _cached_storage_key == (base_path, upload_dir):
             return _cached_storage
     
-    mode = os.getenv("MD_STUDIO_STORAGE_ADAPTER", "fs").lower()
-    _cached_storage = S3ImageStorage() if mode == "s3" else LocalImageStorage(upload_dir=upload_dir, base_path=base_path)
-    _cached_storage_key = (base_path, upload_dir, mode)
+    _cached_storage = LocalImageStorage(upload_dir=upload_dir, base_path=base_path)
+    _cached_storage_key = (base_path, upload_dir)
     return _cached_storage

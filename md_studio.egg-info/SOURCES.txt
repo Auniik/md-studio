@@ -47,11 +47,9 @@ md_studio/static/assets/styles-Dek7A51o.css
 md_studio/static/uploads/.gitkeep
 md_studio/storage/__init__.py
 md_studio/storage/content_adapter.py
-md_studio/storage/file_storage.py
 md_studio/storage/image_storage.py
 md_studio/utils/__init__.py
 md_studio/utils/excerpt.py
 md_studio/utils/frontend.py
 md_studio/utils/safe_fs.py
-md_studio/utils/schemas.py
 md_studio/utils/slug.py

@@ -33,13 +33,6 @@ Requires-Dist: pydantic>=2.0.0
 Requires-Dist: python-frontmatter>=1.0.0
 Requires-Dist: Pygments>=2.15.0
 Requires-Dist: bleach>=6.0.0
-Provides-Extra: s3
-Requires-Dist: boto3>=1.28.0; extra == "s3"
-Provides-Extra: image
-Requires-Dist: Pillow>=10.0.0; extra == "image"
-Provides-Extra: all
-Requires-Dist: boto3>=1.28.0; extra == "all"
-Requires-Dist: Pillow>=10.0.0; extra == "all"
 Provides-Extra: dev
 Requires-Dist: pytest>=7.4.0; extra == "dev"
 Requires-Dist: pytest-asyncio>=0.21.0; extra == "dev"
@@ -57,7 +50,7 @@ A standalone Python package that provides a modern Markdown CMS for FastAPI and 
 - 📝 **Markdown-first**: Write content in Markdown with frontmatter support
 - 🎨 **Modern UI**: React-based interface with dark mode
 - 🚀 **Easy Integration**: Mount as ASGI middleware in any FastAPI/Starlette app
-- 📁 **Flexible Storage**: Filesystem or S3 storage backends
+- 📁 **Flexible Storage**: Filesystem storage for content and uploads
 - 🔒 **Public Sharing**: Share documents publicly with unique URLs
 - 📤 **Import/Export**: Bulk operations with ZIP archives
 - 🖼️ **File Uploads**: Built-in file upload and attachment handling
@@ -67,21 +60,6 @@ A standalone Python package that provides a modern Markdown CMS for FastAPI and 
 
 ```bash
 pip install md-studio
-```
-
-For S3 storage support:
-```bash
-pip install md-studio[s3]
-```
-
-For image processing:
-```bash
-pip install md-studio[image]
-```
-
-All optional dependencies:
-```bash
-pip install md-studio[all]
 ```
 
 ## Quick Start
@@ -144,7 +122,6 @@ Then visit `http://localhost:8000/md-studio`
 MDStudio(
     scan_dirs=["./docs", "./markdowns", "./"],            # Where existing markdown files are scanned
     write_dir="./docs",              # Where new/imported markdown files are written
-    storage_backend="filesystem",       # "filesystem" or "s3"
     title="MD Studio",
 )
 ```
@@ -154,48 +131,7 @@ MDStudio(
 - `MD_STUDIO_SCAN_DIRS`: Comma-separated scan roots (alternative to `scan_dirs`)
 - `MD_STUDIO_CONTENT_DIRS`: Legacy alias for `MD_STUDIO_SCAN_DIRS`
 - `MD_STUDIO_WRITE_DIR`: Write root for new/imported documents
-- `MD_STUDIO_STORAGE_ADAPTER`: `fs` or `s3` (default: `fs`)
-- `MD_STUDIO_S3_BUCKET`: S3 bucket name
-- `MD_STUDIO_S3_REGION`: S3 region
-- `MD_STUDIO_S3_BASE_PREFIX`: S3 key prefix (default: `uploads`)
-- `MD_STUDIO_S3_ACCESS_KEY_ID`: S3 access key
-- `MD_STUDIO_S3_SECRET_ACCESS_KEY`: S3 secret key
-- `MD_STUDIO_S3_PUBLIC_URL`: Public S3 URL override
 - `MD_STUDIO_API_PATH`: API prefix injected into the frontend (default: `/md/api`)
-
-## Storage Backends
-
-### Filesystem (Default)
-
-```python
-app.mount(
-    "/docs",
-    MDStudio(
-        scan_dirs=["./content"],
-        write_dir="./content",
-        storage_backend="filesystem",
-    )
-)
-```
-
-### S3 Storage
-
-```python
-app.mount(
-    "/docs",
-    MDStudio(
-        storage_backend="s3",
-        s3_config={
-            "bucket": "my-bucket",
-            "region": "us-east-1",
-            "access_key_id": "...",
-            "secret_access_key": "...",
-            "base_prefix": "docs/",
-        }
-    )
-)
-```
-
 
 ## License
 

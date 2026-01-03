@@ -1,22 +1,28 @@
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, Field, field_validator
 from typing import Optional
 from datetime import datetime
 
 class CreateDocumentSchema(BaseModel):
     title: str = Field(..., min_length=1)
     slug: Optional[str] = None
-    bodyMd: str = Field(default="")
+    bodyMd: str = Field(..., min_length=1)
+
+    @field_validator("title")
+    @classmethod
+    def validate_title(cls, value: str) -> str:
+        if not value or not value.strip():
+            raise ValueError("Title is required.")
+        return value
+
+    @field_validator("bodyMd")
+    @classmethod
+    def validate_body(cls, value: str) -> str:
+        if not value or not value.strip():
+            raise ValueError("Body is required.")
+        return value
 
 class UpdateDocumentSchema(BaseModel):
-    title: str = Field(..., min_length=1)
-    bodyMd: str = Field(default="")
-
-class DocMeta(BaseModel):
-    slug: str
-    title: str
-    excerpt: str = ""
-    createdAt: datetime
-    updatedAt: datetime
-    isPublic: bool = False
-    publicId: Optional[str] = None
-    bodyMd: str = ""
+    title: Optional[str] = None
+    slug: Optional[str] = None
+    bodyMd: Optional[str] = None
+    isPublic: Optional[bool] = None

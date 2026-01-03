@@ -1,5 +1,5 @@
 from .content_adapter import ContentAdapter, DocMeta, DocFull
-from .image_storage import ImageStorageAdapter, LocalImageStorage, S3ImageStorage, get_image_storage_adapter
+from .image_storage import ImageStorageAdapter, LocalImageStorage, get_image_storage_adapter
 
 __all__ = [
     "ContentAdapter",
@@ -7,6 +7,5 @@ __all__ = [
     "DocFull",
     "ImageStorageAdapter",
     "LocalImageStorage",
-    "S3ImageStorage",
     "get_image_storage_adapter",
 ]

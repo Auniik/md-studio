@@ -14,12 +14,9 @@ class MDStudio(Starlette):
     def __init__(
         self,
         title: str = "md Studio",
-        storage_backend: str = "filesystem",
         scan_dirs: Optional[Union[str, Iterable[str]]] = None,
         write_dir: Optional[Union[str, Iterable[str]]] = None,
         uploads_path: Optional[str] = None,
-        max_upload_size: int = 10 * 1024 * 1024,
-        s3_config: dict | None = None,
         metadata_path: Optional[str] = None,
         **kwargs
     ):
@@ -46,10 +43,7 @@ class MDStudio(Starlette):
             uploads_root = "./uploads"
 
         self.uploads_path = Path(uploads_root) / "uploads" if uploads_path is None else Path(uploads_root)
-        self.storage_backend = storage_backend
         self.title = title
-        self.max_upload_size = max_upload_size
-        self.s3_config = s3_config or {}
         
         self.uploads_path.mkdir(parents=True, exist_ok=True)
         
