@@ -1,4 +1,4 @@
-import type { MetaFunction } from "@remix-run/node";
+import type { MetaFunction } from "@remix-run/react";
 import { useParams } from "@remix-run/react";
 import { useEffect, useState } from "react";
 

@@ -1,9 +1,9 @@
-import type { MetaFunction } from "@remix-run/node";
+import type { MetaFunction } from "@remix-run/react";
 import { useSearchParams } from "@remix-run/react";
 import { useEffect, useState } from "react";
 
 import { DocList } from "@/components/DocList";
-import { type SortBy, type FilterBy } from "@/lib/content-adapter";
+import { type SortBy, type FilterBy } from "@/lib/doc-types";
 import { getShareBaseUrl, withBasePath } from "@/lib/base-path";
 import { NotFoundPage } from "@/components/not-found-page";
 

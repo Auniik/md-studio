@@ -1,4 +1,4 @@
-import { MetaFunction } from "@remix-run/node";
+import type { MetaFunction } from "@remix-run/react";
 import { NotFoundPage } from "@/components/not-found-page";
 
 export const meta: MetaFunction = () => {

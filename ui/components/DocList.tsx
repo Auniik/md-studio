@@ -44,8 +44,7 @@ import {
 import { Input } from "@/components/ui/input";
 import { DocListSkeleton } from "@/components/DocListSkeleton";
 import { useDebounce } from "@/lib/hooks/use-debounce";
-import type { DocMeta } from "@/lib/content-adapter";
-import type { SortBy, FilterBy } from "@/lib/content-adapter";
+import type { DocMeta, SortBy, FilterBy } from "@/lib/doc-types";
 import { useBasePath, withBasePath } from "@/lib/base-path";
 import { formatRelativeDate } from "@/lib/date-utils";
 

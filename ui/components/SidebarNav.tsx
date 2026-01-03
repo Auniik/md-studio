@@ -10,7 +10,7 @@ import { Link, useLocation } from "@remix-run/react";
 
 import { ImportButton } from "@/components/ImportButton";
 import { Button } from "@/components/ui/button";
-import type { DocMeta } from "@/lib/content-adapter";
+import type { DocMeta } from "@/lib/doc-types";
 import { withBasePath, useBasePath } from "@/lib/base-path";
 import { cn } from "@/lib/utils";
 

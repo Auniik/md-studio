@@ -1,4 +1,4 @@
-import type { MetaFunction } from "@remix-run/node";
+import type { MetaFunction } from "@remix-run/react";
 
 import { NewDocumentForm } from "@/components/NewDocumentForm";
 import { Breadcrumb } from "@/components/Breadcrumb";

@@ -5,7 +5,7 @@ import {
   Scripts,
   ScrollRestoration,
 } from "@remix-run/react";
-import type { LinksFunction, MetaFunction } from "@remix-run/node";
+import type { LinksFunction, MetaFunction } from "@remix-run/react";
 import { useState, useEffect } from "react";
 
 import { BasePathProvider, getBasePath, getDashboardPath, getShareBaseUrl, withBasePath } from "@/lib/base-path";

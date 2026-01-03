@@ -2,12 +2,6 @@ import { vitePlugin as remix } from "@remix-run/dev";
 import { defineConfig } from "vite";
 import tsconfigPaths from "vite-tsconfig-paths";
 
-declare module "@remix-run/node" {
-  interface Future {
-    v3_singleFetch: true;
-  }
-}
-
 export default defineConfig(({ command }) => {
   const isBuild = command === "build";
   const basePathPlaceholder = "/__BASE_PATH__";
@@ -48,7 +42,6 @@ export default defineConfig(({ command }) => {
         // Remix
         "@remix-run/react",
         // UI dependencies that get discovered late
-        "next-themes",
         "marked",
         "isomorphic-dompurify",
         "highlight.js",

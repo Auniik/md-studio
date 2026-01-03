@@ -20,7 +20,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { Badge } from "@/components/ui/badge";
-import type { DocMeta } from "@/lib/content-adapter";
+import type { DocMeta } from "@/lib/doc-types";
 import { withBasePath, useBasePath } from "@/lib/base-path";
 
 type ToolbarProps = {

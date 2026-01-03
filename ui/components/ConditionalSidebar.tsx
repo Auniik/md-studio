@@ -1,6 +1,6 @@
 import { useLocation } from "@remix-run/react";
 import { SidebarNav } from "@/components/SidebarNav";
-import type { DocMeta } from "@/lib/content-adapter";
+import type { DocMeta } from "@/lib/doc-types";
 import { useBasePath } from "@/lib/base-path";
 
 type ConditionalSidebarProps = {
