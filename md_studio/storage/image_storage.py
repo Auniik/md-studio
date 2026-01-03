@@ -55,15 +55,15 @@ class LocalImageStorage(ImageStorageAdapter):
 
 class S3ImageStorage(ImageStorageAdapter):
     def __init__(self):
-        self.bucket = os.getenv("S3_BUCKET")
-        self.region = os.getenv("S3_REGION")
+        self.bucket = os.getenv("MD_STUDIO_S3_BUCKET")
+        self.region = os.getenv("MD_STUDIO_S3_REGION")
         
         if not self.bucket or not self.region:
-            raise ValueError("S3_BUCKET and S3_REGION must be provided for S3 uploads.")
+            raise ValueError("MD_STUDIO_S3_BUCKET and MD_STUDIO_S3_REGION must be provided for S3 uploads.")
         
-        self.base_path = os.getenv("S3_BASE_PREFIX", "uploads")
-        self.access_key = os.getenv("S3_ACCESS_KEY_ID")
-        self.secret_key = os.getenv("S3_SECRET_ACCESS_KEY")
+        self.base_path = os.getenv("MD_STUDIO_S3_BASE_PREFIX", "uploads")
+        self.access_key = os.getenv("MD_STUDIO_S3_ACCESS_KEY_ID")
+        self.secret_key = os.getenv("MD_STUDIO_S3_SECRET_ACCESS_KEY")
         
         try:
             import boto3
@@ -96,7 +96,7 @@ class S3ImageStorage(ImageStorageAdapter):
             ACL="public-read"
         )
         
-        endpoint = os.getenv("S3_PUBLIC_URL") or f"https://{self.bucket}.s3.{self.region}.amazonaws.com"
+        endpoint = os.getenv("MD_STUDIO_S3_PUBLIC_URL") or f"https://{self.bucket}.s3.{self.region}.amazonaws.com"
         
         return {
             "url": f"{endpoint}/{key}"
@@ -110,10 +110,10 @@ def get_image_storage_adapter(base_path: str = "", upload_dir: Optional[str] = N
     global _cached_storage_key
     
     if _cached_storage:
-        if _cached_storage_key == (base_path, upload_dir, os.getenv("STORAGE_ADAPTER", "fs").lower()):
+        if _cached_storage_key == (base_path, upload_dir, os.getenv("MD_STUDIO_STORAGE_ADAPTER", "fs").lower()):
             return _cached_storage
     
-    mode = os.getenv("STORAGE_ADAPTER", "fs").lower()
+    mode = os.getenv("MD_STUDIO_STORAGE_ADAPTER", "fs").lower()
     _cached_storage = S3ImageStorage() if mode == "s3" else LocalImageStorage(upload_dir=upload_dir, base_path=base_path)
     _cached_storage_key = (base_path, upload_dir, mode)
     return _cached_storage

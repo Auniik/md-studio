@@ -46,11 +46,11 @@ class ContentAdapter:
         self.write_dir_override = write_dir
 
         if scan_dirs is None and write_dir is None:
-            env_scan = os.getenv("SCAN_DIRS") or os.getenv("CONTENT_DIRS")
-            env_write = os.getenv("WRITE_DIR")
+            env_scan = os.getenv("MD_STUDIO_SCAN_DIRS") or os.getenv("MD_STUDIO_CONTENT_DIRS")
+            env_write = os.getenv("MD_STUDIO_WRITE_DIR")
             if not env_scan and not env_write:
                 raise ValueError(
-                    "Provide scan_dirs or write_dir (or set SCAN_DIRS/WRITE_DIR) to locate content."
+                    "Provide scan_dirs or write_dir (or set MD_STUDIO_SCAN_DIRS/MD_STUDIO_WRITE_DIR) to locate content."
                 )
 
         self.index_path = Path(index_path or os.path.join(os.getcwd(), ".md-studio", "index.json"))
@@ -76,11 +76,11 @@ class ContentAdapter:
             roots = self._normalize_roots(self.scan_dirs_override)
             if roots:
                 return roots
-        scan_dirs = os.getenv("SCAN_DIRS")
+        scan_dirs = os.getenv("MD_STUDIO_SCAN_DIRS")
         if scan_dirs:
             return self._normalize_roots(scan_dirs)
         
-        content_dirs = os.getenv("CONTENT_DIRS")
+        content_dirs = os.getenv("MD_STUDIO_CONTENT_DIRS")
         if content_dirs:
             return self._normalize_roots(content_dirs)
         
@@ -91,7 +91,7 @@ class ContentAdapter:
             dirs = self._normalize_roots(self.write_dir_override)
             if dirs:
                 return dirs[0]
-        write_dir = os.getenv("WRITE_DIR")
+        write_dir = os.getenv("MD_STUDIO_WRITE_DIR")
         if write_dir:
             dirs = self._normalize_roots(write_dir)
             if dirs:
@@ -99,7 +99,7 @@ class ContentAdapter:
         if self.scan_roots:
             return self.scan_roots[0]
         raise ValueError(
-            "Provide scan_dirs or write_dir (or set SCAN_DIRS/WRITE_DIR) to locate content."
+            "Provide scan_dirs or write_dir (or set MD_STUDIO_SCAN_DIRS/MD_STUDIO_WRITE_DIR) to locate content."
         )
 
     def _get_roots(self) -> List[Path]:

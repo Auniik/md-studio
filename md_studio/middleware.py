@@ -24,11 +24,11 @@ class MDStudio(Starlette):
         **kwargs
     ):
         if scan_dirs is None and write_dir is None:
-            env_scan = os.getenv("SCAN_DIRS") or os.getenv("CONTENT_DIRS")
-            env_write = os.getenv("WRITE_DIR")
+            env_scan = os.getenv("MD_STUDIO_SCAN_DIRS") or os.getenv("MD_STUDIO_CONTENT_DIRS")
+            env_write = os.getenv("MD_STUDIO_WRITE_DIR")
             if not env_scan and not env_write:
                 raise ValueError(
-                    "Provide scan_dirs or write_dir (or set SCAN_DIRS/WRITE_DIR) to locate content."
+                    "Provide scan_dirs or write_dir (or set MD_STUDIO_SCAN_DIRS/MD_STUDIO_WRITE_DIR) to locate content."
                 )
 
         def _first_path(raw: Optional[Union[str, Iterable[str]]]) -> Optional[str]:
@@ -39,8 +39,8 @@ class MDStudio(Starlette):
                 return parts[0] if parts else None
             return next(iter(raw), None)
 
-        resolved_write = _first_path(write_dir) or os.getenv("WRITE_DIR")
-        resolved_scan = _first_path(scan_dirs) or os.getenv("SCAN_DIRS") or os.getenv("CONTENT_DIRS")
+        resolved_write = _first_path(write_dir) or os.getenv("MD_STUDIO_WRITE_DIR")
+        resolved_scan = _first_path(scan_dirs) or os.getenv("MD_STUDIO_SCAN_DIRS") or os.getenv("MD_STUDIO_CONTENT_DIRS")
         uploads_root = uploads_path or resolved_write or resolved_scan
         if uploads_root is None:
             uploads_root = "./uploads"

@@ -54,7 +54,7 @@ app.mount(
 )
 ```
 
-`scan_dirs` (required unless `SCAN_DIRS`/`WRITE_DIR` are set) controls where existing content is scanned.
+`scan_dirs` (required unless `MD_STUDIO_SCAN_DIRS`/`MD_STUDIO_WRITE_DIR` are set) controls where existing content is scanned.
 `write_dir` selects where new/imported documents are saved.
 Uploads default to `<write_dir>/uploads` unless `uploads_path` is provided.
 `metadata_path` controls where the index metadata is stored (default: `<write_dir>/uploads/.md-studio-metadata.json`).
@@ -98,6 +98,20 @@ MDStudio(
     title="MD Studio",
 )
 ```
+
+### Environment Variables
+
+- `MD_STUDIO_SCAN_DIRS`: Comma-separated scan roots (alternative to `scan_dirs`)
+- `MD_STUDIO_CONTENT_DIRS`: Legacy alias for `MD_STUDIO_SCAN_DIRS`
+- `MD_STUDIO_WRITE_DIR`: Write root for new/imported documents
+- `MD_STUDIO_STORAGE_ADAPTER`: `fs` or `s3` (default: `fs`)
+- `MD_STUDIO_S3_BUCKET`: S3 bucket name
+- `MD_STUDIO_S3_REGION`: S3 region
+- `MD_STUDIO_S3_BASE_PREFIX`: S3 key prefix (default: `uploads`)
+- `MD_STUDIO_S3_ACCESS_KEY_ID`: S3 access key
+- `MD_STUDIO_S3_SECRET_ACCESS_KEY`: S3 secret key
+- `MD_STUDIO_S3_PUBLIC_URL`: Public S3 URL override
+- `MD_STUDIO_API_PATH`: API prefix injected into the frontend (default: `/md/api`)
 
 ## Storage Backends
 
