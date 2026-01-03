@@ -1,8 +1,6 @@
-import io
-import zipfile
 import frontmatter
 from starlette.routing import Route
-from starlette.responses import JSONResponse, StreamingResponse
+from starlette.responses import JSONResponse
 from starlette.requests import Request
 from typing import Optional
 
@@ -277,7 +275,6 @@ routes = [
     Route("/api/get", get_document, methods=["GET"]),
     Route("/api/create", create_document, methods=["POST"]),
     Route("/api/update", update_document, methods=["POST", "PUT", "PATCH"]),
-    Route("/api/update/", update_document, methods=["POST", "PUT", "PATCH"]),
     Route("/api/delete", delete_document, methods=["POST", "DELETE"]),
     Route("/api/toggle-public", toggle_public, methods=["POST"]),
     Route("/api/upload", upload_file, methods=["POST"]),
