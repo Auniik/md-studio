@@ -1,5 +1,5 @@
-from md_studio.middleware import MarkdownStudioMiddleware
+from md_studio.middleware import MDStudio
 
 __version__ = "0.1.0"
 
-__all__ = ["MarkdownStudioMiddleware"]
+__all__ = ["MDStudio"]

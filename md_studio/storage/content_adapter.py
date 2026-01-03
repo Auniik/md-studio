@@ -38,7 +38,6 @@ class DocFull:
 class ContentAdapter:
     def __init__(
         self,
-        content_root: Optional[str] = None,
         index_path: Optional[str] = None,
         scan_dirs: Optional[Union[str, Iterable[str]]] = None,
         write_dir: Optional[Union[str, Iterable[str]]] = None,
@@ -46,7 +45,7 @@ class ContentAdapter:
         self.scan_dirs_override = scan_dirs
         self.write_dir_override = write_dir
 
-        if content_root is None and scan_dirs is None and write_dir is None:
+        if scan_dirs is None and write_dir is None:
             env_scan = os.getenv("SCAN_DIRS") or os.getenv("CONTENT_DIRS")
             env_write = os.getenv("WRITE_DIR")
             if not env_scan and not env_write:
@@ -54,7 +53,6 @@ class ContentAdapter:
                     "Provide scan_dirs or write_dir (or set SCAN_DIRS/WRITE_DIR) to locate content."
                 )
 
-        self.content_root = Path(content_root or os.path.join(os.getcwd(), "content"))
         self.index_path = Path(index_path or os.path.join(os.getcwd(), ".md-studio", "index.json"))
         
         self.scan_roots = self._get_scan_roots()
@@ -86,7 +84,7 @@ class ContentAdapter:
         if content_dirs:
             return self._normalize_roots(content_dirs)
         
-        return [self.content_root]
+        return []
     
     def _get_write_root(self) -> Path:
         if self.write_dir_override is not None:
@@ -98,7 +96,11 @@ class ContentAdapter:
             dirs = self._normalize_roots(write_dir)
             if dirs:
                 return dirs[0]
-        return self.scan_roots[0] if self.scan_roots else self.content_root
+        if self.scan_roots:
+            return self.scan_roots[0]
+        raise ValueError(
+            "Provide scan_dirs or write_dir (or set SCAN_DIRS/WRITE_DIR) to locate content."
+        )
 
     def _get_roots(self) -> List[Path]:
         roots: List[Path] = []

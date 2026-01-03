@@ -40,16 +40,16 @@ pip install md-studio[all]
 
 ```python
 from fastapi import FastAPI
-from md_studio import MarkdownStudioMiddleware
+from md_studio import MDStudio
 
 app = FastAPI()
 
 app.mount(
-    "/docs",
-    MarkdownStudioMiddleware(
+    "/md-studio",
+    MDStudio(
         title="My Documentation",
-        scan_dirs=["./content"],
-        write_dir="./content",
+        scan_dirs=["./docs", "./markdowns", "./"],
+        write_dir="./docs",
     )
 )
 ```
@@ -64,16 +64,16 @@ Uploads default to `<write_dir>/uploads` unless `uploads_path` is provided.
 ```python
 from starlette.applications import Starlette
 from starlette.routing import Mount
-from md_studio import MarkdownStudioMiddleware
+from md_studio import MDStudio
 
 app = Starlette(
     routes=[
         Mount(
-            "/docs",
-            MarkdownStudioMiddleware(
-                title="My Docs",
-                scan_dirs=["./content"],
-                write_dir="./content",
+            "/md-studio",
+            MDStudio(
+                title="My Markdown Docs",
+                scan_dirs=["./docs", "./markdowns", "./"],
+                write_dir="./docs",
             )
         )
     ]
@@ -86,18 +86,16 @@ app = Starlette(
 uvicorn main:app --reload
 ```
 
-Then visit `http://localhost:8000/docs`
+Then visit `http://localhost:8000/md-studio`
 
 ## Configuration
 
 ```python
-MarkdownStudioMiddleware(
-    scan_dirs=["./content"],            # Where existing markdown files are scanned
-    write_dir="./content",              # Where new/imported markdown files are written
+MDStudio(
+    scan_dirs=["./docs", "./markdowns", "./"],            # Where existing markdown files are scanned
+    write_dir="./docs",              # Where new/imported markdown files are written
     storage_backend="filesystem",       # "filesystem" or "s3"
-    title="MD Studio",                  # Application title
-    max_upload_size=10485760,           # Max upload size (10MB)
-    s3_config=None,                     # S3 configuration dict
+    title="MD Studio",
 )
 ```
 
@@ -108,7 +106,7 @@ MarkdownStudioMiddleware(
 ```python
 app.mount(
     "/docs",
-    MarkdownStudioMiddleware(
+    MDStudio(
         scan_dirs=["./content"],
         write_dir="./content",
         storage_backend="filesystem",
@@ -121,7 +119,7 @@ app.mount(
 ```python
 app.mount(
     "/docs",
-    MarkdownStudioMiddleware(
+    MDStudio(
         storage_backend="s3",
         s3_config={
             "bucket": "my-bucket",
@@ -134,30 +132,6 @@ app.mount(
 )
 ```
 
-## Development
-
-### Frontend Development
-
-The frontend is built with Remix and React. To rebuild the frontend:
-
-```bash
-cd md-cms-file
-npm install
-npm run build
-```
-
-Then copy the built assets:
-
-```bash
-cp -r md-cms-file/build/client/* md-studio/md_studio/static/
-```
-
-### Running Tests
-
-```bash
-pip install -e ".[dev]"
-pytest
-```
 
 ## License
 

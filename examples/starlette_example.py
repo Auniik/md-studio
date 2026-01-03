@@ -1,14 +1,15 @@
 from starlette.applications import Starlette
 from starlette.routing import Mount
-from md_studio import MarkdownStudioMiddleware
+from md_studio import MDStudio
 import uvicorn
 
 app = Starlette(
     routes=[
         Mount(
             "/",
-            MarkdownStudioMiddleware(
-                storage_path="./content",
+            MDStudio(
+                scan_dirs=["./content"],
+                write_dir="./content",
                 uploads_path="./uploads",
                 title="MD Studio",
             )

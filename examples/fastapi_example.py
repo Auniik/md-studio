@@ -1,11 +1,11 @@
 from fastapi import FastAPI
-from md_studio import MarkdownStudioMiddleware
+from md_studio import MDStudio
 
 app = FastAPI()
 
 app.mount(
     "/md-studio",
-    MarkdownStudioMiddleware(
+    MDStudio(
         title="md Studio",
         scan_dirs=["./content",],
         write_dir="./content",
