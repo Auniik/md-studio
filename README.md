@@ -54,8 +54,6 @@ app.mount(
 )
 ```
 
-`base_path` is optional; when omitted it defaults to the mount prefix (e.g. `"/docs"`).
-
 `scan_dirs` (required unless `SCAN_DIRS`/`WRITE_DIR` are set) controls where existing content is scanned.
 `write_dir` selects where new/imported documents are saved.
 Uploads default to `<write_dir>/uploads` unless `uploads_path` is provided.

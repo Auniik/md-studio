@@ -20,7 +20,6 @@ class MarkdownStudioMiddleware(Starlette):
         title: str = "MD Studio",
         max_upload_size: int = 10 * 1024 * 1024,
         s3_config: dict = None,
-        base_path: str = "/",
         scan_dirs: Optional[Union[str, Iterable[str]]] = None,
         write_dir: Optional[Union[str, Iterable[str]]] = None,
         metadata_path: Optional[str] = None,
@@ -62,7 +61,6 @@ class MarkdownStudioMiddleware(Starlette):
         self.title = title
         self.max_upload_size = max_upload_size
         self.s3_config = s3_config or {}
-        self.base_path = self._normalize_base_path(base_path)
         
         self.storage_path.mkdir(parents=True, exist_ok=True)
         self.uploads_path.mkdir(parents=True, exist_ok=True)
@@ -84,7 +82,6 @@ class MarkdownStudioMiddleware(Starlette):
             scan_dirs=scan_dirs,
             write_dir=write_dir,
         )
-        self.state.base_path = self.base_path
         self.state.uploads_path = str(self.uploads_path)
     
     async def serve_spa(self, request):
@@ -129,8 +126,6 @@ class MarkdownStudioMiddleware(Starlette):
     
 
     def _get_effective_base_path(self, request) -> str:
-        if self.base_path:
-            return self.base_path
         root_path = request.scope.get("root_path", "") or ""
         return self._normalize_base_path(root_path)
 
