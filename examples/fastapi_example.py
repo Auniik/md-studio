@@ -6,7 +6,6 @@ app = FastAPI()
 app.mount(
     "/md-studio",
     MDStudio(
-        title="md Studio",
         scan_dirs=["./content",],
         write_dir="./content",
     )

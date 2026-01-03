@@ -6,7 +6,7 @@ import uvicorn
 app = Starlette(
     routes=[
         Mount(
-            "/",
+            "/md-studio",
             MDStudio(
                 scan_dirs=["./content"],
                 write_dir="./content",
