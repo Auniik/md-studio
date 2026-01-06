@@ -1,6 +1,6 @@
 Metadata-Version: 2.4
 Name: md-studio
-Version: 1.0.2
+Version: 1.0.3
 Summary: Markdown CMS as a Python package - embed in FastAPI/Starlette applications
 Author: Anik Datta
 License: MIT
@@ -149,6 +149,8 @@ MDStudio(
 - `MD_STUDIO_CONTENT_DIRS`: Legacy alias for `MD_STUDIO_SCAN_DIRS`
 - `MD_STUDIO_WRITE_DIR`: Write root for new/imported documents
 - `MD_STUDIO_API_PATH`: API prefix injected into the frontend (default: `/md/api`)
+
+For deployment to production environments, see [DEPLOYMENT.md](DEPLOYMENT.md).
 
 ## License
 
