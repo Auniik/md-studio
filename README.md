@@ -6,7 +6,7 @@ A standalone Python package that provides a modern Markdown CMS for FastAPI and 
 
 - 📝 **Markdown-first**: Write content in Markdown with frontmatter support
 - 🎨 **Modern UI**: React-based interface with dark mode
-- 🚀 **Easy Integration**: Mount as ASGI middleware in any FastAPI/Starlette app
+- 🚀 **Easy Integration**: Mount as an ASGI app in any FastAPI/Starlette app
 - 📁 **Flexible Storage**: Filesystem storage for content and uploads
 - 🔒 **Public Sharing**: Share documents publicly with unique URLs
 - 📤 **Import/Export**: Bulk operations with ZIP archives
@@ -39,10 +39,11 @@ app.mount(
 )
 ```
 
-`scan_dirs` (required unless `MD_STUDIO_SCAN_DIRS`/`MD_STUDIO_WRITE_DIR` are set) controls where existing content is scanned.
+Provide at least one of `scan_dirs` or `write_dir` (or set `MD_STUDIO_SCAN_DIRS`/`MD_STUDIO_WRITE_DIR`) so the content store can be located.
+`scan_dirs` controls where existing content is scanned (list or comma-separated string).
 `write_dir` selects where new/imported documents are saved.
-Uploads default to `<write_dir>/uploads` unless `uploads_path` is provided.
-`metadata_path` controls where the index metadata is stored (default: `<write_dir>/uploads/.md-studio-metadata.json`).
+`uploads_path` defaults to `<write_dir>/uploads` (or `<scan_dirs[0]>/uploads` if `write_dir` is unset).
+`metadata_path` controls where the index metadata is stored (default: `<uploads_path>/.md-studio-metadata.json`).
 
 ### Starlette
 
@@ -99,6 +100,8 @@ Note: Some dependencies require Node 20.19+, 22.12+, or 24+ to avoid EBADENGINE 
 MDStudio(
     scan_dirs=["./docs", "./markdowns", "./"],            # Where existing markdown files are scanned
     write_dir="./docs",              # Where new/imported markdown files are written
+    uploads_path="./docs/uploads",   # Optional override (defaults to write_dir/uploads)
+    metadata_path="./docs/uploads/.md-studio-metadata.json",  # Optional override
     title="MD Studio",
 )
 ```

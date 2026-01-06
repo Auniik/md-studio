@@ -22,3 +22,4 @@ ui/build
 node_modules
 ui/node_modules
 ui/.env
+dist

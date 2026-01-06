@@ -1,6 +1,6 @@
 Metadata-Version: 2.4
 Name: md-studio
-Version: 0.1.0
+Version: 1.0.1
 Summary: Markdown CMS as a Python package - embed in FastAPI/Starlette applications
 Author: Anik Datta
 License: MIT
@@ -8,10 +8,9 @@ Project-URL: Homepage, https://github.com/Auniik/md-studio
 Project-URL: Documentation, https://github.com/Auniik/md-studio#readme
 Project-URL: Repository, https://github.com/Auniik/md-studio
 Project-URL: Issues, https://github.com/Auniik/md-studio/issues
-Keywords: markdown,cms,fastapi,starlette,documentation
+Keywords: markdown,cms,fastapi,starlette,documentation,md
 Classifier: Development Status :: 3 - Alpha
 Classifier: Intended Audience :: Developers
-Classifier: License :: OSI Approved :: MIT License
 Classifier: Programming Language :: Python :: 3
 Classifier: Programming Language :: Python :: 3.8
 Classifier: Programming Language :: Python :: 3.9
@@ -24,7 +23,6 @@ Classifier: Topic :: Software Development :: Libraries :: Python Modules
 Classifier: Topic :: Text Processing :: Markup :: Markdown
 Requires-Python: >=3.8
 Description-Content-Type: text/markdown
-License-File: LICENSE
 Requires-Dist: starlette>=0.27.0
 Requires-Dist: python-multipart>=0.0.6
 Requires-Dist: aiofiles>=23.0.0
@@ -39,17 +37,16 @@ Requires-Dist: pytest-asyncio>=0.21.0; extra == "dev"
 Requires-Dist: httpx>=0.24.0; extra == "dev"
 Requires-Dist: black>=23.0.0; extra == "dev"
 Requires-Dist: ruff>=0.0.280; extra == "dev"
-Dynamic: license-file
 
 # MD Studio
 
-A standalone Python package that provides a modern Markdown CMS for FastAPI and Starlette applications. No Node.js runtime required.
+A standalone Python package that provides a modern Markdown CMS for FastAPI and Starlette applications. 
 
 ## Features
 
 - 📝 **Markdown-first**: Write content in Markdown with frontmatter support
 - 🎨 **Modern UI**: React-based interface with dark mode
-- 🚀 **Easy Integration**: Mount as ASGI middleware in any FastAPI/Starlette app
+- 🚀 **Easy Integration**: Mount as an ASGI app in any FastAPI/Starlette app
 - 📁 **Flexible Storage**: Filesystem storage for content and uploads
 - 🔒 **Public Sharing**: Share documents publicly with unique URLs
 - 📤 **Import/Export**: Bulk operations with ZIP archives
@@ -82,10 +79,11 @@ app.mount(
 )
 ```
 
-`scan_dirs` (required unless `MD_STUDIO_SCAN_DIRS`/`MD_STUDIO_WRITE_DIR` are set) controls where existing content is scanned.
+Provide at least one of `scan_dirs` or `write_dir` (or set `MD_STUDIO_SCAN_DIRS`/`MD_STUDIO_WRITE_DIR`) so the content store can be located.
+`scan_dirs` controls where existing content is scanned (list or comma-separated string).
 `write_dir` selects where new/imported documents are saved.
-Uploads default to `<write_dir>/uploads` unless `uploads_path` is provided.
-`metadata_path` controls where the index metadata is stored (default: `<write_dir>/uploads/.md-studio-metadata.json`).
+`uploads_path` defaults to `<write_dir>/uploads` (or `<scan_dirs[0]>/uploads` if `write_dir` is unset).
+`metadata_path` controls where the index metadata is stored (default: `<uploads_path>/.md-studio-metadata.json`).
 
 ### Starlette
 
@@ -142,6 +140,8 @@ Note: Some dependencies require Node 20.19+, 22.12+, or 24+ to avoid EBADENGINE 
 MDStudio(
     scan_dirs=["./docs", "./markdowns", "./"],            # Where existing markdown files are scanned
     write_dir="./docs",              # Where new/imported markdown files are written
+    uploads_path="./docs/uploads",   # Optional override (defaults to write_dir/uploads)
+    metadata_path="./docs/uploads/.md-studio-metadata.json",  # Optional override
     title="MD Studio",
 )
 ```

@@ -2,7 +2,6 @@ LICENSE
 MANIFEST.in
 README.md
 pyproject.toml
-setup.py
 md_studio/__init__.py
 md_studio/middleware.py
 md_studio.egg-info/PKG-INFO
