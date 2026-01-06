@@ -113,6 +113,8 @@ MDStudio(
 - `MD_STUDIO_WRITE_DIR`: Write root for new/imported documents
 - `MD_STUDIO_API_PATH`: API prefix injected into the frontend (default: `/md/api`)
 
+For deployment to production environments, see [DEPLOYMENT.md](DEPLOYMENT.md).
+
 ## License
 
 MIT License - see LICENSE file for details

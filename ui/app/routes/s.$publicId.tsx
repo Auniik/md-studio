@@ -33,7 +33,7 @@ export default function SharedDocPage() {
   const [error, setError] = useState<string | null>(null);
   const [notFound, setNotFound] = useState(false);
   
-  const baseUrl = typeof window !== "undefined" ? (window as any).ENV?.SHARE_BASE_URL ?? "" : "";
+  const baseUrl = typeof window !== "undefined" ? window.location.origin : "";
   
   useEffect(() => {
     if (!publicId) return;

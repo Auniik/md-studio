@@ -24,6 +24,5 @@ ui/node_modules
 ui/.env
 dist
 
-# Deployment configs (kept local only)
 railway.toml
 requirements.txt

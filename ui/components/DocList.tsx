@@ -356,16 +356,21 @@ export function DocList({
           }
         }
         const publicId = nextDoc.publicId || nextDoc.slug;
-        const sharePath = basePath ? `${basePath}/s/${publicId}` : `/s/${publicId}`;
         const origin =
           typeof window !== "undefined" ? window.location.origin : "";
-        const base =
-          baseUrl && /^https?:\/\//i.test(baseUrl)
-            ? baseUrl
-            : baseUrl && baseUrl.startsWith("/")
-              ? `${origin}${baseUrl}`
-              : origin;
-        const url = base ? new URL(sharePath, base).toString() : sharePath;
+        if (!origin) {
+          const fallbackPath = basePath ? `${basePath}/s/${publicId}` : `/s/${publicId}`;
+          await navigator.clipboard.writeText(fallbackPath);
+          toast.success("Share link copied.");
+          if (!doc.isPublic) {
+            toast.success("Document is now public.");
+          }
+          return;
+        }
+        // Normalize basePath: remove trailing/leading slashes
+        const normalizedBase = basePath ? basePath.replace(/^\/+|\/+$/g, '') : '';
+        const fullPath = normalizedBase ? `/${normalizedBase}/s/${publicId}` : `/s/${publicId}`;
+        const url = `${origin}${fullPath}`;
         await navigator.clipboard.writeText(url);
         toast.success("Share link copied.");
         if (!doc.isPublic) {

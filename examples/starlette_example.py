@@ -16,5 +16,5 @@ app = Starlette(
     ]
 )
 
-if __name__ == "__main__":
-    uvicorn.run(app, port=8123)
+# if __name__ == "__main__":
+#     uvicorn.run(app, port=8123)

@@ -47,16 +47,15 @@ export function Toolbar({
   }, [doc]);
 
   const buildShareLink = (publicId: string) => {
-    const sharePath = basePath ? `${basePath}/s/${publicId}` : `/s/${publicId}`;
     const origin =
       typeof window !== "undefined" ? window.location.origin : "";
-    const base =
-      shareBaseUrl && /^https?:\/\//i.test(shareBaseUrl)
-        ? shareBaseUrl
-        : shareBaseUrl && shareBaseUrl.startsWith("/")
-          ? `${origin}${shareBaseUrl}`
-          : origin;
-    return base ? new URL(sharePath, base).toString() : sharePath;
+    if (!origin) {
+      return basePath ? `${basePath}/s/${publicId}` : `/s/${publicId}`;
+    }
+    // Normalize basePath: remove trailing/leading slashes
+    const normalizedBase = basePath ? basePath.replace(/^\/+|\/+$/g, '') : '';
+    const fullPath = normalizedBase ? `/${normalizedBase}/s/${publicId}` : `/s/${publicId}`;
+    return `${origin}${fullPath}`;
   };
 
   const handleTogglePublic = async () => {

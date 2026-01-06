@@ -26,7 +26,7 @@ export default function DashboardPage() {
   const page = Number.isFinite(pageNumber) && pageNumber > 0 ? pageNumber : 1;
   const sortBy = (searchParams.get("sortBy") ?? "date-newest") as SortBy;
   const filterBy = (searchParams.get("filterBy") ?? "all") as FilterBy;
-  const baseUrl = typeof window !== "undefined" ? (window as any).ENV?.SHARE_BASE_URL ?? "" : "";
+  const baseUrl = typeof window !== "undefined" ? window.location.origin : "";
 
   useEffect(() => {
     setLoading(true);

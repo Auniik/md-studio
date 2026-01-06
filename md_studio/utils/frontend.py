@@ -90,6 +90,11 @@ async def serve_asset(request):
             media_type = "application/json"
         elif file_path.suffix == ".html":
             media_type = "text/html"
-        return Response(content, media_type=media_type)
+        
+        # Add cache headers for static assets
+        headers = {
+            "Cache-Control": "public, max-age=31536000, immutable"
+        }
+        return Response(content, media_type=media_type, headers=headers)
 
     return FileResponse(file_path)
