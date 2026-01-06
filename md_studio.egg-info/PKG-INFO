@@ -1,6 +1,6 @@
 Metadata-Version: 2.4
 Name: md-studio
-Version: 1.0.1
+Version: 1.0.2
 Summary: Markdown CMS as a Python package - embed in FastAPI/Starlette applications
 Author: Anik Datta
 License: MIT
@@ -26,11 +26,8 @@ Description-Content-Type: text/markdown
 Requires-Dist: starlette>=0.27.0
 Requires-Dist: python-multipart>=0.0.6
 Requires-Dist: aiofiles>=23.0.0
-Requires-Dist: markdown>=3.4.0
 Requires-Dist: pydantic>=2.0.0
 Requires-Dist: python-frontmatter>=1.0.0
-Requires-Dist: Pygments>=2.15.0
-Requires-Dist: bleach>=6.0.0
 Provides-Extra: dev
 Requires-Dist: pytest>=7.4.0; extra == "dev"
 Requires-Dist: pytest-asyncio>=0.21.0; extra == "dev"

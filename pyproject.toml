@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "md-studio"
-version = "1.0.1"
+version = "1.0.2"
 description = "Markdown CMS as a Python package - embed in FastAPI/Starlette applications"
 readme = "README.md"
 requires-python = ">=3.8"
@@ -32,11 +32,8 @@ dependencies = [
     "starlette>=0.27.0",
     "python-multipart>=0.0.6",
     "aiofiles>=23.0.0",
-    "markdown>=3.4.0",
     "pydantic>=2.0.0",
     "python-frontmatter>=1.0.0",
-    "Pygments>=2.15.0",
-    "bleach>=6.0.0",
 ]
 
 [project.optional-dependencies]
