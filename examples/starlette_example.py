@@ -6,11 +6,10 @@ import uvicorn
 app = Starlette(
     routes=[
         Mount(
-            "/md-studio",
+            "/",
             MDStudio(
-                scan_dirs=["./content"],
-                write_dir="./content",
-                uploads_path="./uploads",
+                scan_dirs=["./docs"],
+                write_dir="./docs",
                 title="MD Studio",
             )
         )
@@ -18,4 +17,4 @@ app = Starlette(
 )
 
 if __name__ == "__main__":
-    uvicorn.run(app, host="0.0.0.0", port=8000)
+    uvicorn.run(app, port=8123)
